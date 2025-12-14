@@ -1,5 +1,6 @@
 package com.example.quizapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.Set;
  * Category entity for ManyToMany relationship with Quiz.
  */
 @Entity
+@JsonIgnoreProperties({"quizzes"})
 @Table(name = "category")
 public class Category {
 

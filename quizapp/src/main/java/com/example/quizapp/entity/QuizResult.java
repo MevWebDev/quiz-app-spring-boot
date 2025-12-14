@@ -1,5 +1,6 @@
 package com.example.quizapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
  * QuizResult entity for storing quiz completion results (ranking).
  */
 @Entity
+@JsonIgnoreProperties({"quiz"})
 @Table(name = "quiz_result")
 public class QuizResult {
 

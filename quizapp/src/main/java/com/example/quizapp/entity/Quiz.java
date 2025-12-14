@@ -1,5 +1,6 @@
 package com.example.quizapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Set;
  * Quiz entity - main entity representing a quiz.
  */
 @Entity
+@JsonIgnoreProperties({"questions", "results"})
 @Table(name = "quiz")
 public class Quiz {
 

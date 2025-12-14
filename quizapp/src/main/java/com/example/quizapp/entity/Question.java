@@ -1,5 +1,6 @@
 package com.example.quizapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
  * Question entity representing a question in a quiz.
  */
 @Entity
+@JsonIgnoreProperties({"quiz", "answers"})
 @Table(name = "question")
 public class Question {
 

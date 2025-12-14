@@ -1,11 +1,13 @@
 package com.example.quizapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 /**
  * Answer entity representing possible answers for a question.
  */
 @Entity
+@JsonIgnoreProperties({"question"})
 @Table(name = "answer")
 public class Answer {
 
