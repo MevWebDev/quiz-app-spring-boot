@@ -27,19 +27,11 @@ public class QuizMvcController {
     }
 
     /**
-     * List all quizzes with pagination
+     * List all quizzes - redirect to admin dashboard
      */
     @GetMapping
-    public String listQuizzes(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Model model) {
-        Page<QuizDTO> quizPage = quizService.getAllQuizzes(PageRequest.of(page, size));
-        model.addAttribute("quizzes", quizPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", quizPage.getTotalPages());
-        model.addAttribute("totalItems", quizPage.getTotalElements());
-        return "quiz/list";
+    public String listQuizzes() {
+        return "redirect:/admin";
     }
 
     /**

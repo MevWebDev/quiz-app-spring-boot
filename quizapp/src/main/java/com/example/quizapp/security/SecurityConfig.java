@@ -51,6 +51,9 @@ public class SecurityConfig {
                 // Home
                 .requestMatchers("/", "/home").permitAll()
                 
+                // Game pages - public (play quiz without login)
+                .requestMatchers("/play/**", "/submit/**", "/result/**", "/ranking/**", "/ranking").permitAll()
+                
                 // Quiz list and view - public (GET only)
                 .requestMatchers(HttpMethod.GET, "/quizzes").permitAll()
                 .requestMatchers(HttpMethod.GET, "/quizzes/{id}").permitAll()
@@ -73,7 +76,7 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/quizzes", true)
+                .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
             )

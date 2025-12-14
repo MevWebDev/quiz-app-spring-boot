@@ -25,8 +25,17 @@ public class QuizResultDTO {
         this.score = result.getScore();
         this.maxScore = result.getMaxScore();
         this.completedAt = result.getCompletedAt();
-        this.quizId = result.getQuiz() != null ? result.getQuiz().getId() : null;
-        this.quizTitle = result.getQuiz() != null ? result.getQuiz().getTitle() : null;
+        // Safely access quiz properties - they may be lazy loaded
+        try {
+            if (result.getQuiz() != null) {
+                this.quizId = result.getQuiz().getId();
+                this.quizTitle = result.getQuiz().getTitle();
+            }
+        } catch (Exception e) {
+            // Lazy loading exception - ignore
+            this.quizId = null;
+            this.quizTitle = null;
+        }
     }
 
     // Getters and Setters

@@ -26,14 +26,4 @@ public class AuthController {
         
         return "auth/login";
     }
-
-    @GetMapping("/")
-    public String home() {
-        return "redirect:/quizzes";
-    }
-
-    @GetMapping("/home")
-    public String homePage() {
-        return "redirect:/quizzes";
-    }
 }
