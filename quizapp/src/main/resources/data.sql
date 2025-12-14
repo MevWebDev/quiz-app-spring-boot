@@ -24,8 +24,7 @@ VALUES (
 )
 ON CONFLICT DO NOTHING;
 
--- Get the quiz ID for references (assuming it's ID 1 for sample data)
--- Note: In production, you would use proper foreign key management
+-- Users are now created by DataInitializer with properly encoded BCrypt passwords
 
 -- Insert sample questions for the Java quiz (quiz_id = 1)
 INSERT INTO question (text, type, points, order_index, quiz_id)

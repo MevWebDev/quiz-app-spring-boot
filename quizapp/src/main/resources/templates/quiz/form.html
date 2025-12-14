@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/layout :: head(${isEdit} ? 'Edit Quiz' : 'New Quiz')}"
+  ></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <div class="container mt-4">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/quizzes">Quizzes</a></li>
+          <li
+            class="breadcrumb-item active"
+            th:text="${isEdit} ? 'Edit Quiz' : 'New Quiz'"
+          >
+            Form
+          </li>
+        </ol>
+      </nav>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">
+            <i th:class="${isEdit} ? 'bi bi-pencil' : 'bi bi-plus-circle'"></i>
+            <span th:text="${isEdit} ? 'Edit Quiz' : 'Create New Quiz'"
+              >Quiz Form</span
+            >
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- Form with th:object and th:field -->
+          <form
+            th:action="${isEdit} ? @{/quizzes/{id}(id=${quizId})} : @{/quizzes}"
+            method="post"
+            th:object="${quiz}"
+          >
+            <!-- Title field with th:errors -->
+            <div class="mb-3">
+              <label for="title" class="form-label">Title *</label>
+              <input
+                type="text"
+                class="form-control"
+                th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'"
+                id="title"
+                th:field="*{title}"
+                placeholder="Enter quiz title"
+              />
+              <div
+                th:if="${#fields.hasErrors('title')}"
+                class="invalid-feedback"
+                th:errors="*{title}"
+              >
+                Title error
+              </div>
+            </div>
+
+            <!-- Description field -->
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                id="description"
+                th:field="*{description}"
+                rows="3"
+                placeholder="Enter quiz description"
+              ></textarea>
+              <div
+                th:if="${#fields.hasErrors('description')}"
+                class="invalid-feedback"
+                th:errors="*{description}"
+              >
+                Description error
+              </div>
+            </div>
+
+            <!-- Time Limit -->
+            <div class="mb-3">
+              <label for="timeLimit" class="form-label"
+                >Time Limit (seconds)</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="timeLimit"
+                th:field="*{timeLimit}"
+                min="0"
+                placeholder="Leave empty for no limit"
+              />
+              <div class="form-text">Leave empty for no time limit</div>
+            </div>
+
+            <!-- Options -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="shuffleQuestions"
+                    th:field="*{shuffleQuestions}"
+                  />
+                  <label class="form-check-label" for="shuffleQuestions">
+                    <i class="bi bi-shuffle"></i> Shuffle Questions
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="shuffleAnswers"
+                    th:field="*{shuffleAnswers}"
+                  />
+                  <label class="form-check-label" for="shuffleAnswers">
+                    <i class="bi bi-shuffle"></i> Shuffle Answers
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="negativePoints"
+                    th:field="*{negativePoints}"
+                  />
+                  <label class="form-check-label" for="negativePoints">
+                    <i class="bi bi-dash-circle"></i> Negative Points
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <hr />
+
+            <!-- Submit buttons -->
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i
+                  th:class="${isEdit} ? 'bi bi-save' : 'bi bi-plus-circle'"
+                ></i>
+                <span th:text="${isEdit} ? 'Save Changes' : 'Create Quiz'"
+                  >Submit</span
+                >
+              </button>
+              <a href="/quizzes" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+  </body>
+</html>

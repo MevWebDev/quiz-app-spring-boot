@@ -2,11 +2,10 @@ package com.example.quizapp.controller;
 
 import com.example.quizapp.dto.CreateQuizRequest;
 import com.example.quizapp.dto.QuizDTO;
-import com.example.quizapp.entity.Quiz;
-import com.example.quizapp.exception.ResourceNotFoundException;
-import com.example.quizapp.repository.QuizRepository;
+import com.example.quizapp.service.QuizService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,16 +16,17 @@ import java.util.List;
 
 /**
  * REST Controller for Quiz CRUD operations.
+ * Uses service layer and @Valid for validation.
  */
 @RestController
 @RequestMapping("/api/v1/quizzes")
 @Tag(name = "Quiz", description = "Quiz management API")
 public class QuizController {
 
-    private final QuizRepository quizRepository;
+    private final QuizService quizService;
 
-    public QuizController(QuizRepository quizRepository) {
-        this.quizRepository = quizRepository;
+    public QuizController(QuizService quizService) {
+        this.quizService = quizService;
     }
 
     /**
@@ -35,8 +35,7 @@ public class QuizController {
     @GetMapping
     @Operation(summary = "Get all quizzes", description = "Returns a paginated list of quizzes")
     public ResponseEntity<Page<QuizDTO>> getAllQuizzes(Pageable pageable) {
-        Page<QuizDTO> quizzes = quizRepository.findAll(pageable).map(QuizDTO::new);
-        return ResponseEntity.ok(quizzes);
+        return ResponseEntity.ok(quizService.getAllQuizzes(pageable));
     }
 
     /**
@@ -45,9 +44,7 @@ public class QuizController {
     @GetMapping("/{id}")
     @Operation(summary = "Get quiz by ID", description = "Returns a single quiz by its ID")
     public ResponseEntity<QuizDTO> getQuizById(@PathVariable Long id) {
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
-        return ResponseEntity.ok(new QuizDTO(quiz));
+        return ResponseEntity.ok(quizService.getQuizById(id));
     }
 
     /**
@@ -56,11 +53,7 @@ public class QuizController {
     @GetMapping("/search")
     @Operation(summary = "Search quizzes", description = "Search quizzes by title")
     public ResponseEntity<List<QuizDTO>> searchQuizzes(@RequestParam String title) {
-        List<QuizDTO> quizzes = quizRepository.findByTitleContainingIgnoreCase(title)
-                .stream()
-                .map(QuizDTO::new)
-                .toList();
-        return ResponseEntity.ok(quizzes);
+        return ResponseEntity.ok(quizService.searchQuizzes(title));
     }
 
     /**
@@ -68,17 +61,9 @@ public class QuizController {
      */
     @PostMapping
     @Operation(summary = "Create quiz", description = "Creates a new quiz")
-    public ResponseEntity<QuizDTO> createQuiz(@RequestBody CreateQuizRequest request) {
-        Quiz quiz = new Quiz();
-        quiz.setTitle(request.getTitle());
-        quiz.setDescription(request.getDescription());
-        quiz.setTimeLimit(request.getTimeLimit());
-        quiz.setShuffleQuestions(request.getShuffleQuestions());
-        quiz.setShuffleAnswers(request.getShuffleAnswers());
-        quiz.setNegativePoints(request.getNegativePoints());
-        
-        Quiz savedQuiz = quizRepository.save(quiz);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new QuizDTO(savedQuiz));
+    public ResponseEntity<QuizDTO> createQuiz(@Valid @RequestBody CreateQuizRequest request) {
+        QuizDTO created = quizService.createQuiz(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
@@ -86,19 +71,8 @@ public class QuizController {
      */
     @PutMapping("/{id}")
     @Operation(summary = "Update quiz", description = "Updates an existing quiz")
-    public ResponseEntity<QuizDTO> updateQuiz(@PathVariable Long id, @RequestBody CreateQuizRequest request) {
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
-        
-        quiz.setTitle(request.getTitle());
-        quiz.setDescription(request.getDescription());
-        quiz.setTimeLimit(request.getTimeLimit());
-        quiz.setShuffleQuestions(request.getShuffleQuestions());
-        quiz.setShuffleAnswers(request.getShuffleAnswers());
-        quiz.setNegativePoints(request.getNegativePoints());
-        
-        Quiz updatedQuiz = quizRepository.save(quiz);
-        return ResponseEntity.ok(new QuizDTO(updatedQuiz));
+    public ResponseEntity<QuizDTO> updateQuiz(@PathVariable Long id, @Valid @RequestBody CreateQuizRequest request) {
+        return ResponseEntity.ok(quizService.updateQuiz(id, request));
     }
 
     /**
@@ -107,10 +81,7 @@ public class QuizController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete quiz", description = "Deletes a quiz by ID")
     public ResponseEntity<Void> deleteQuiz(@PathVariable Long id) {
-        if (!quizRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Quiz", id);
-        }
-        quizRepository.deleteById(id);
+        quizService.deleteQuiz(id);
         return ResponseEntity.noContent().build();
     }
 }
