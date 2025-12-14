@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: quizapp
+
+  # PostgreSQL Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/quizapp_db
+    username: szymongrysiewicz
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # SQL Script Initialization
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    check-template-location: false
+
+# Logging
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
