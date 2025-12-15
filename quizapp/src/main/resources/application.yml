@@ -25,7 +25,7 @@ spring:
   # SQL Script Initialization
   sql:
     init:
-      mode: always
+      mode: never
       continue-on-error: true
 
   # Thymeleaf Configuration

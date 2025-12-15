@@ -7,9 +7,11 @@ import com.example.quizapp.dto.QuizDTO;
 import com.example.quizapp.entity.*;
 import com.example.quizapp.exception.ResourceNotFoundException;
 import com.example.quizapp.repository.*;
+import com.example.quizapp.service.QuestionService;
 import com.example.quizapp.service.QuizService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -21,21 +23,25 @@ import java.util.List;
  */
 @Controller
 @RequestMapping("/admin")
+@Transactional(readOnly = true)
 public class AdminController {
 
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
     private final QuizService quizService;
+    private final QuestionService questionService;
 
     public AdminController(QuizRepository quizRepository,
                           QuestionRepository questionRepository,
                           AnswerRepository answerRepository,
-                          QuizService quizService) {
+                          QuizService quizService,
+                          QuestionService questionService) {
         this.quizRepository = quizRepository;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.quizService = quizService;
+        this.questionService = questionService;
     }
 
     /**
@@ -65,6 +71,7 @@ public class AdminController {
      * Create a new quiz
      */
     @PostMapping("/quiz")
+    @Transactional
     public String createQuiz(@ModelAttribute CreateQuizRequest request,
                             RedirectAttributes redirectAttributes) {
         QuizDTO created = quizService.createQuiz(request);
@@ -96,6 +103,7 @@ public class AdminController {
      * Update quiz
      */
     @PostMapping("/quiz/{id}")
+    @Transactional
     public String updateQuiz(@PathVariable Long id,
                             @ModelAttribute CreateQuizRequest request,
                             RedirectAttributes redirectAttributes) {
@@ -108,6 +116,7 @@ public class AdminController {
      * Delete quiz
      */
     @PostMapping("/quiz/{id}/delete")
+    @Transactional
     public String deleteQuiz(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         quizService.deleteQuiz(id);
         redirectAttributes.addFlashAttribute("successMessage", "Quiz deleted successfully!");
@@ -120,10 +129,10 @@ public class AdminController {
     @GetMapping("/quiz/{quizId}/questions")
     public String manageQuestions(@PathVariable Long quizId, Model model) {
         QuizDTO quiz = quizService.getQuizById(quizId);
-        List<Question> questions = questionRepository.findByQuizIdOrderByOrderIndexAsc(quizId);
+        List<QuestionDTO> questions = questionService.getQuestionsByQuiz(quizId, true);
         
         model.addAttribute("quiz", quiz);
-        model.addAttribute("questions", questions.stream().map(QuestionDTO::new).toList());
+        model.addAttribute("questions", questions);
         model.addAttribute("questionTypes", QuestionType.values());
         return "admin/questions";
     }
@@ -132,6 +141,7 @@ public class AdminController {
      * Add a new question
      */
     @PostMapping("/quiz/{quizId}/questions")
+    @Transactional
     public String addQuestion(@PathVariable Long quizId,
                              @RequestParam String text,
                              @RequestParam QuestionType type,
@@ -156,6 +166,7 @@ public class AdminController {
      * Delete a question
      */
     @PostMapping("/questions/{id}/delete")
+    @Transactional
     public String deleteQuestion(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", id));
@@ -167,17 +178,39 @@ public class AdminController {
     }
 
     /**
+     * Update an existing question
+     */
+    @PostMapping("/questions/{id}/update")
+    @Transactional
+    public String updateQuestion(@PathVariable Long id,
+                                @RequestParam String text,
+                                @RequestParam QuestionType type,
+                                @RequestParam(defaultValue = "1") Integer points,
+                                RedirectAttributes redirectAttributes) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", id));
+        Long quizId = question.getQuiz().getId();
+        
+        question.setText(text);
+        question.setType(type);
+        question.setPoints(points);
+        
+        questionRepository.save(question);
+        redirectAttributes.addFlashAttribute("successMessage", "Question updated successfully!");
+        return "redirect:/admin/quiz/" + quizId + "/questions";
+    }
+
+    /**
      * Manage answers for a question
      */
     @GetMapping("/questions/{questionId}/answers")
     public String manageAnswers(@PathVariable Long questionId, Model model) {
-        Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Question", questionId));
+        QuestionDTO question = questionService.getQuestionById(questionId);
         List<Answer> answers = answerRepository.findByQuestionIdOrderByOrderIndexAsc(questionId);
         
-        model.addAttribute("question", new QuestionDTO(question));
+        model.addAttribute("question", question);
         model.addAttribute("answers", answers.stream().map(AnswerDTO::new).toList());
-        model.addAttribute("quizId", question.getQuiz().getId());
+        model.addAttribute("quizId", question.getQuizId());
         return "admin/answers";
     }
 
@@ -185,6 +218,7 @@ public class AdminController {
      * Add a new answer
      */
     @PostMapping("/questions/{questionId}/answers")
+    @Transactional
     public String addAnswer(@PathVariable Long questionId,
                            @RequestParam String text,
                            @RequestParam(defaultValue = "false") Boolean isCorrect,
@@ -208,6 +242,7 @@ public class AdminController {
      * Delete an answer
      */
     @PostMapping("/answers/{id}/delete")
+    @Transactional
     public String deleteAnswer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Answer", id));
